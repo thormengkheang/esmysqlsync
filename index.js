@@ -22,7 +22,6 @@ class ESMySQLSync {
     this.zongJi = new ZongJi(mysql);
     this.elasticSearch = new ElasticSearch.Client({
       host: 'localhost:9200',
-      log: 'trace',
       ...elastic,
     });
     this.index = index;
@@ -30,6 +29,11 @@ class ESMySQLSync {
     this.delete = remove;
     this.success = success;
     this.error = error;
+  }
+
+  stop()
+  {
+    this.zongJi.stop();
   }
 
   start(options, callback) {
@@ -58,7 +62,7 @@ class ESMySQLSync {
           break;
 
         default:
-          evt.dump();
+          break;
       }
 
       if (bulkItems.length > 0) {
