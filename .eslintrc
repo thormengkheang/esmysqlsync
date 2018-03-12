@@ -1,0 +1,14 @@
+{
+    "extends": "airbnb",
+    "rules": {
+        "object-curly-newline": [
+            "error",
+            {
+                "ObjectPattern": {
+                    "multiline": true
+                }
+            }
+        ],
+        "no-console": "off"
+    }
+}
