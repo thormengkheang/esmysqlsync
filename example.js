@@ -1,4 +1,4 @@
-const ESMySQLSync = require('./index');
+const ESMySQLSync = require('ESMySQLSync');
 
 const app = new ESMySQLSync({
   mysql: {
