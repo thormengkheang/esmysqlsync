@@ -4,12 +4,12 @@ A small library for syncing elastic search with mysql using [Zong Ji](https://gi
 
 ## Installation
 
-    `npm install esmysqlsync`
+`npm install esmysqlsync`
 
 ## Usage
 
 ```javascript
-const ESMySQLSync = require('./index');
+const ESMySQLSync = require('./ESMySQLSync');
 
 const app = new ESMySQLSync({
   mysql: {
