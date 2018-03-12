@@ -9,7 +9,7 @@ A small library for syncing elastic search with mysql using [Zong Ji](https://gi
 ## Usage
 
 ```javascript
-const ESMySQLSync = require('./ESMySQLSync');
+const ESMySQLSync = require('ESMySQLSync');
 
 const app = new ESMySQLSync({
   mysql: {
