@@ -1,24 +1,11 @@
 const ZongJi = require('zongji');
 const ElasticSearch = require('elasticsearch');
 
-
-const setItemsAction = (rows, action, handler) => {
-  const bulkItems = [];
-  rows.forEach((row) => {
-    const { index: _index, type: _type, id: _id, body } = handler({ row });
-    bulkItems.push({ [action]: { _index, _type, _id } });
-    if (action === 'index') {
-      bulkItems.push(body);
-    }
-    if (action === 'update') {
-      bulkItems.push({ doc: body });
-    }
-  });
-  return bulkItems;
-};
-
 class ESMySQLSync {
-  constructor({ mysql, elastic, index, update, delete: remove, success, error }) {
+  constructor({
+    mysql, elastic, index, update, delete: remove,
+    success = () => {}, error = () => {}, smallestBatch = 10,
+  }) {
     this.zongJi = new ZongJi(mysql);
     this.elasticSearch = new ElasticSearch.Client({
       host: 'localhost:9200',
@@ -27,9 +14,11 @@ class ESMySQLSync {
     });
     this.index = index;
     this.update = update;
-    this.delete = remove;
+    this.delete = remove; // delete is a reserved keyword so have to alias to remove
     this.success = success;
     this.error = error;
+    this.smallestBatch = smallestBatch * 2;
+    this.bulkItems = [];
   }
 
   start(options, callback) {
@@ -38,32 +27,57 @@ class ESMySQLSync {
       ...options,
     });
     this.listen();
-    callback();
+    if (typeof callback === 'function') {
+      callback();
+    }
+  }
+
+  setItemsAction(evt, handler) {
+    const { rows } = evt;
+    const tableMap = evt.tableMap[evt.tableId];
+    rows.forEach((row) => {
+      const { index: _index, type: _type, id: _id, body, action } = handler({ row, tableMap });
+      if (!action) {
+        throw new Error('Elastic Search action not found');
+      }
+      this.bulkItems.push({ [action]: { _index, _type, _id } });
+      if (action === 'index') {
+        this.bulkItems.push(body);
+      }
+      if (action === 'update') {
+        this.bulkItems.push({ doc: body });
+      }
+    });
   }
 
   listen() {
     this.zongJi.on('binlog', (evt) => {
       const eventName = evt.getEventName();
-      let bulkItems = [];
 
       switch (eventName) {
-        case 'writerows':
-          bulkItems = setItemsAction(evt.rows, 'index', this.index);
+        case 'writerows': {
+          this.setItemsAction(evt, this.index);
           break;
-        case 'updaterows':
-          bulkItems = setItemsAction(evt.rows, 'update', this.update);
+        }
+        case 'updaterows': {
+          this.setItemsAction(evt, this.update);
           break;
-        case 'deleterows':
-          bulkItems = setItemsAction(evt.rows, 'delete', this.delete);
+        }
+        case 'deleterows': {
+          this.setItemsAction(evt, this.delete);
           break;
+        }
 
         default:
           evt.dump();
       }
 
-      if (bulkItems.length > 0) {
-        this.elasticSearch.bulk({ body: bulkItems })
-          .then(res => this.success(res))
+      if (this.bulkItems.length > 0 && this.bulkItems.length >= this.smallestBatch) {
+        this.elasticSearch.bulk({ body: this.bulkItems })
+          .then((res) => {
+            this.success(res);
+            this.bulkItems = [];
+          })
           .catch(err => this.error(err));
       }
     });
