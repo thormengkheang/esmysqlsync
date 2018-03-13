@@ -28,5 +28,6 @@ const app = new ESMySQLSync({
   error: e => console.log(e), // optional
 });
 
-app.start({ startAtEnd: true }, () => console.log('Running'));
+app.start({ startAtEnd: true });
+console.log('Running');
 ```
