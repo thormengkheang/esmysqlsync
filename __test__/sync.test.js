@@ -34,17 +34,20 @@ test('test sync between mysql and elastic search', async () => {
       host: config.mysql_host,
       user: config.mysql_user,
       password: config.mysql_pass,
-	  port: config.mysql_port
+      port: config.mysql_port,
     },
     elastic: { host: config.es_host },
     index: ({ row }) => ({ index: 'test_user', type: 'user', id: row.id, body: row }),
     update: ({ row }) => ({ index: 'test_user', type: 'user', id: row.after.id, body: row.after }),
-    delete: ({ row }) => ({ index: 'test_user', type: 'user', id: row.id }),
+    delete: ({ row }) => ({ delete: 'test_user', type: 'user', id: row.id }),
     success: () => { },
     error: () => { },
   });
 
   s.start({ startAtEnd: true }, () => { });
+
+  // Wait 2 seconds for our engine to properly start
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   // Let make some changes
   await connection.query('INSERT INTO test_user VALUES(1, "Jonh", "M", "CEO", 1200)');
