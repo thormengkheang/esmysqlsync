@@ -37,7 +37,7 @@ test('test sync between mysql and elastic search', async () => {
       port: config.mysql_port,
     },
     smallestBatch: 1,
-    elastic: { host: config.es_host },
+    elastic: { host: config.es_host, log: 'error' },
     index: ({ row }) => ({ action: 'index', index: 'test_user', type: 'user', id: row.id, body: row }),
     update: ({ row }) => ({ action: 'update', index: 'test_user', type: 'user', id: row.after.id, body: row.after }),
     delete: ({ row }) => ({ action: 'delete', index: 'test_user', type: 'user', id: row.id }),
