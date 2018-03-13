@@ -4,7 +4,7 @@ const ElasticSearch = require('elasticsearch');
 class ESMySQLSync {
   constructor({
     mysql, elastic, index, update, delete: remove,
-    success = () => {}, error = () => {}, smallestBatch = 10,
+    success = () => {}, error = () => {}, batch = 10,
   }) {
     this.zongJi = new ZongJi(mysql);
     this.elasticSearch = new ElasticSearch.Client({
@@ -16,7 +16,8 @@ class ESMySQLSync {
     this.delete = remove; // delete is a reserved keyword so have to alias to remove
     this.success = success;
     this.error = error;
-    this.smallestBatch = smallestBatch * 2;
+    this.batch = batch;
+    this.batchCounter = 0;
     this.bulkItems = [];
   }
 
@@ -44,7 +45,10 @@ class ESMySQLSync {
       if (!action) {
         throw new Error('Elastic Search action not found');
       }
+
+      this.batchCounter++;
       this.bulkItems.push({ [action]: { _index, _type, _id } });
+
       if (action === 'index') {
         this.bulkItems.push(body);
       }
@@ -76,7 +80,8 @@ class ESMySQLSync {
           break;
       }
 
-      if (this.bulkItems.length > 0 && this.bulkItems.length >= this.smallestBatch) {
+      if (this.batchCounter >= this.batch) {
+        this.batchCounter = 0;
         this.elasticSearch.bulk({ body: this.bulkItems })
           .then((res) => {
             this.success(res);
