@@ -81,13 +81,15 @@ class ESMySQLSync {
       }
 
       if (this.batchCounter >= this.batch) {
-        this.batchCounter = 0;
+        
         this.elasticSearch.bulk({ body: this.bulkItems })
           .then((res) => {
             this.success(res);
-            this.bulkItems = [];
           })
           .catch(err => this.error(err));
+      
+        this.batchCounter = 0;
+        this.bulkItems = [];
       }
     });
   }
