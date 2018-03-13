@@ -39,7 +39,7 @@ test('test sync between mysql and elastic search', async () => {
     elastic: { host: config.es_host },
     index: ({ row }) => ({ index: 'test_user', type: 'user', id: row.id, body: row }),
     update: ({ row }) => ({ index: 'test_user', type: 'user', id: row.after.id, body: row.after }),
-    delete: ({ row }) => ({ delete: 'test_user', type: 'user', id: row.id }),
+    delete: ({ row }) => ({ action: 'delete', index: 'test_user', type: 'user', id: row.id }),
     success: () => { },
     error: () => { },
   });
