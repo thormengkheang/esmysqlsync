@@ -22,6 +22,10 @@ class ESMySQLSync {
     this.bulkItems = [];
   }
 
+  stop() {
+    this.zongJi.stop();
+  }
+
   start(options) {
     this.zongJi.start({
       includeEvents: ['tablemap', 'writerows', 'updaterows', 'deleterows'],
@@ -68,7 +72,7 @@ class ESMySQLSync {
         }
 
         default:
-          evt.dump();
+          break;
       }
 
       if (this.bulkItems.length > 0 && this.batchCount >= this.smallestBatch) {
