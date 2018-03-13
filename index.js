@@ -17,19 +17,17 @@ class ESMySQLSync {
     this.delete = remove; // delete is a reserved keyword so have to alias to remove
     this.success = success;
     this.error = error;
-    this.smallestBatch = smallestBatch * 2;
+    this.smallestBatch = smallestBatch;
+    this.batchCount = 0;
     this.bulkItems = [];
   }
 
-  start(options, callback) {
+  start(options) {
     this.zongJi.start({
       includeEvents: ['tablemap', 'writerows', 'updaterows', 'deleterows'],
       ...options,
     });
     this.listen();
-    if (typeof callback === 'function') {
-      callback();
-    }
   }
 
   setItemsAction(evt, handler) {
@@ -47,6 +45,7 @@ class ESMySQLSync {
       if (action === 'update') {
         this.bulkItems.push({ doc: body });
       }
+      this.batchCount += 1;
     });
   }
 
@@ -72,11 +71,12 @@ class ESMySQLSync {
           evt.dump();
       }
 
-      if (this.bulkItems.length > 0 && this.bulkItems.length >= this.smallestBatch) {
+      if (this.bulkItems.length > 0 && this.batchCount >= this.smallestBatch) {
         this.elasticSearch.bulk({ body: this.bulkItems })
           .then((res) => {
             this.success(res);
             this.bulkItems = [];
+            this.batchCount = 0;
           })
           .catch(err => this.error(err));
       }
