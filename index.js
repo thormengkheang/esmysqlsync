@@ -89,6 +89,7 @@ class ESMySQLSync {
         this.elasticSearch.bulk({ body: t })
           .then((res) => {
             this.success(res);
+            console.log("Success", res);
           })
           .catch(err => this.error(err));
       }
