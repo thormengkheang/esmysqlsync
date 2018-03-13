@@ -1,6 +1,6 @@
 {
   "name": "esmysqlsync",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A small library for syncing elastic search with mysql using Zong Ji",
   "main": "index.js",
   "scripts": {
