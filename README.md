@@ -1,5 +1,7 @@
 # ESMySQLSync
 
+[![Build Status](https://travis-ci.org/mengkheang/esmysqlsync.svg?branch=master)](https://travis-ci.org/mengkheang/esmysqlsync)
+
 A small library for syncing elastic search with mysql using [Zong Ji](https://github.com/nevill/zongji).
 
 ## Installation
