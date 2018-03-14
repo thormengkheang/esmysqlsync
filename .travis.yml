@@ -1,9 +1,12 @@
 language: node_js
+
 node_js:
   - 9
   - 8
+
 services:
   - docker
+
 before_install:
   - docker pull mysql:5.7
   - docker pull docker.elastic.co/elasticsearch/elasticsearch:6.2.2
@@ -12,3 +15,9 @@ before_install:
   
 before_script:
   - sleep 10
+
+script:
+  - npm test --coverage
+
+after_script:
+  - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
