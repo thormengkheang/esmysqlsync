@@ -4,7 +4,7 @@ const ElasticSearch = require('elasticsearch');
 class ESMySQLSync {
   constructor({
     mysql, elastic, index, update, delete: remove,
-    success = () => {}, error = () => {}, smallestBatch = 10,
+    success = () => {}, error = () => {}, batch = 10,
   }) {
     this.zongJi = new ZongJi(mysql);
     this.elasticSearch = new ElasticSearch.Client({
@@ -17,8 +17,8 @@ class ESMySQLSync {
     this.delete = remove; // delete is a reserved keyword so have to alias to remove
     this.success = success;
     this.error = error;
-    this.smallestBatch = smallestBatch;
-    this.batchCount = 0;
+    this.batch = batch;
+    this.batchCounter = 0;
     this.bulkItems = [];
   }
 
@@ -42,14 +42,16 @@ class ESMySQLSync {
       if (!action) {
         throw new Error('Elastic Search action not found');
       }
+
+      this.batchCounter += 1;
       this.bulkItems.push({ [action]: { _index, _type, _id } });
+
       if (action === 'index') {
         this.bulkItems.push(body);
       }
       if (action === 'update') {
         this.bulkItems.push({ doc: body });
       }
-      this.batchCount += 1;
     });
   }
 
@@ -75,12 +77,14 @@ class ESMySQLSync {
           break;
       }
 
-      if (this.bulkItems.length > 0 && this.batchCount >= this.smallestBatch) {
-        this.elasticSearch.bulk({ body: this.bulkItems })
+      if (this.batchCounter >= this.batch) {
+        const body = this.bulkItems;
+        this.bulkItems = [];
+        this.batchCounter = 0;
+
+        this.elasticSearch.bulk({ body })
           .then((res) => {
             this.success(res);
-            this.bulkItems = [];
-            this.batchCount = 0;
           })
           .catch(err => this.error(err));
       }
