@@ -1,5 +1,6 @@
 const ZongJi = require('zongji');
 const ElasticSearch = require('elasticsearch');
+const ActionQueue = require('./lib/ActionQueue');
 
 class ESMySQLSync {
   constructor({
@@ -19,6 +20,7 @@ class ESMySQLSync {
     this.batch = batch;
     this.batchCounter = 0;
     this.bulkItems = [];
+    this.queue = new ActionQueue();
   }
 
   stop()
@@ -81,13 +83,19 @@ class ESMySQLSync {
       }
 
       if (this.batchCounter >= this.batch) {
+        let t = this.bulkItems;
+        this.bulkItems = [];
         this.batchCounter = 0;
-        this.elasticSearch.bulk({ body: this.bulkItems })
-          .then((res) => {
+ 
+        this.queue.run( (next) => {
+          this.elasticSearch.bulk({ body: t }).then((res) => {
             this.success(res);
-            this.bulkItems = [];
-          })
-          .catch(err => this.error(err));
+            next();
+          }).catch((err) => {
+            this.error(err);
+            next();
+          });
+        });
       }
     });
   }
