@@ -4,7 +4,7 @@
   "description": "A small library for syncing elastic search with mysql using Zong Ji",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --coverage",
     "lint": "eslint ."
   },
   "keywords": [],
