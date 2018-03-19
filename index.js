@@ -10,6 +10,7 @@ class ESMySQLSync {
     this.zongJi = new ZongJi(mysql);
     this.elasticSearch = new ElasticSearch.Client({
       host: 'localhost:9200',
+      log: 'trace',
       ...elastic,
     });
     this.index = index;
@@ -23,20 +24,16 @@ class ESMySQLSync {
     this.queue = new ActionQueue();
   }
 
-  stop()
-  {
+  stop() {
     this.zongJi.stop();
   }
 
-  start(options, callback) {
+  start(options) {
     this.zongJi.start({
       includeEvents: ['tablemap', 'writerows', 'updaterows', 'deleterows'],
       ...options,
     });
     this.listen();
-    if (typeof callback === 'function') {
-      callback();
-    }
   }
 
   setItemsAction(evt, handler) {
@@ -51,7 +48,7 @@ class ESMySQLSync {
         throw new Error('Elastic Search action not found');
       }
 
-      this.batchCounter++;
+      this.batchCounter += 1;
       this.bulkItems.push({ [action]: { _index, _type, _id } });
 
       if (action === 'index') {
@@ -86,12 +83,12 @@ class ESMySQLSync {
       }
 
       if (this.batchCounter >= this.batch) {
-        let t = this.bulkItems;
+        const body = this.bulkItems;
         this.bulkItems = [];
         this.batchCounter = 0;
- 
-        this.queue.run( (next) => {
-          this.elasticSearch.bulk({ body: t }).then((res) => {
+
+        this.queue.run((next) => {
+          this.elasticSearch.bulk({ body }).then((res) => {
             this.success(res);
             next();
           }).catch((err) => {

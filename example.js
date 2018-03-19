@@ -6,7 +6,7 @@ const app = new ESMySQLSync({
     user: 'slave',
     password: 'password',
   },
-  smallestBatch: 1, // default to 10
+  batch: 10, // default to 10
   index: ({ row, tableMap }) => {
     console.log(tableMap); // additional table data
     return { action: 'index', index: 'products', type: 'product_type', id: row.id, body: row };
@@ -17,4 +17,5 @@ const app = new ESMySQLSync({
   error: e => console.log(e), // optional
 });
 
-app.start({ startAtEnd: true }, () => console.log('Running'));
+app.start({ startAtEnd: true });
+console.log('Running');

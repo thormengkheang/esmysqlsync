@@ -1,5 +1,8 @@
 # ESMySQLSync
 
+[![Build Status](https://travis-ci.org/mengkheang/esmysqlsync.svg?branch=master)](https://travis-ci.org/mengkheang/esmysqlsync)
+[![Coverage Status](https://coveralls.io/repos/github/mengkheang/esmysqlsync/badge.svg?branch=master)](https://coveralls.io/github/mengkheang/esmysqlsync?branch=master)
+
 A small library for syncing elastic search with mysql using [Zong Ji](https://github.com/nevill/zongji).
 
 ## Installation
@@ -17,7 +20,7 @@ const app = new ESMySQLSync({
     user: 'slave',
     password: 'password',
   },
-  smallestBatch: 1, // default to 10
+  batch: 10, // default to 10
   index: ({ row, tableMap }) => {
     console.log(tableMap); // additional table data
     return { action: 'index', index: 'products', type: 'product_type', id: row.id, body: row };
@@ -28,5 +31,6 @@ const app = new ESMySQLSync({
   error: e => console.log(e), // optional
 });
 
-app.start({ startAtEnd: true }, () => console.log('Running'));
+app.start({ startAtEnd: true });
+console.log('Running');
 ```

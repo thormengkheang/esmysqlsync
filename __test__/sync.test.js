@@ -36,7 +36,7 @@ test('test sync between mysql and elastic search', async () => {
       password: config.mysql_pass,
       port: config.mysql_port,
     },
-    elastic: { host: config.es_host },
+    elastic: { host: config.es_host, log: 'error' },
     batch: 1,
     index: ({ row }) => {
       if (row.salary < 100) return;
@@ -44,8 +44,6 @@ test('test sync between mysql and elastic search', async () => {
     },
     update: ({ row }) => ({ action: 'update', index: 'test_user', type: 'user', id: row.after.id, body: row.after }),
     delete: ({ row }) => ({ action: 'delete', index: 'test_user', type: 'user', id: row.id }),
-    success: () => { },
-    error: () => { },
   });
 
   s.start({ startAtEnd: true }, () => { });
@@ -70,7 +68,7 @@ test('test sync between mysql and elastic search', async () => {
     setTimeout(() => {
       s.stop();
       resolve();
-    }, 5000);
+    }, 10000);
   });
 
   // check the result from elastic search
@@ -91,5 +89,4 @@ test('test sync between mysql and elastic search', async () => {
   expect(r1._source).toEqual({ id: 1, name: 'Jonh', gender: 'M', title: 'CEO', salary: 1300 });
   expect(r2._source).toEqual({ id: 2, name: 'Mike', gender: 'M', title: 'CTO', salary: 1100 });
   expect(r3._source).toEqual({ id: 6, name: 'Sopheak', gender: 'M', title: 'Programmer', salary: 1000 });
-
 }, 15000);
