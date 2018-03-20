@@ -39,7 +39,7 @@ test('test sync between mysql and elastic search', async () => {
     elastic: { host: config.es_host, log: 'error' },
     batch: 1,
     index: ({ row }) => {
-      if (row.salary < 100) return;
+      if (row.salary < 100) return undefined;
       return { action: 'index', index: 'test_user', type: 'user', id: row.id, body: row };
     },
     update: ({ row }) => ({ action: 'update', index: 'test_user', type: 'user', id: row.after.id, body: row.after }),
