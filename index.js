@@ -40,7 +40,10 @@ class ESMySQLSync {
     const { rows } = evt;
     const tableMap = evt.tableMap[evt.tableId];
     rows.forEach((row) => {
-      const { index: _index, type: _type, id: _id, body, action } = handler({ row, tableMap });
+      const result = handler({ row, tableMap });
+      if (result === undefined) return;
+
+      const { index: _index, type: _type, id: _id, body, action } = result;
       if (!action) {
         throw new Error('Elastic Search action not found');
       }

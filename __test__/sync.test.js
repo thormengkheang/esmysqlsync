@@ -38,7 +38,10 @@ test('test sync between mysql and elastic search', async () => {
     },
     elastic: { host: config.es_host, log: 'error' },
     batch: 1,
-    index: ({ row }) => ({ action: 'index', index: 'test_user', type: 'user', id: row.id, body: row }),
+    index: ({ row }) => {
+      if (row.salary < 100) return undefined;
+      return { action: 'index', index: 'test_user', type: 'user', id: row.id, body: row };
+    },
     update: ({ row }) => ({ action: 'update', index: 'test_user', type: 'user', id: row.after.id, body: row.after }),
     delete: ({ row }) => ({ action: 'delete', index: 'test_user', type: 'user', id: row.id }),
   });
@@ -55,6 +58,7 @@ test('test sync between mysql and elastic search', async () => {
   await connection.query('UPDATE test_user SET salary = salary + 100 WHERE salary >= 1000');
   await connection.query('INSERT INTO test_user VALUES(5, "Denny", "F", "Accounting", 500)');
   await connection.query('INSERT INTO test_user VALUES(6, "Sopheak", "M", "Programmer", 1000)');
+  await connection.query('INSERT INTO test_user VALUES(7, "None", "M", "None", 0)');
   await connection.query('DELETE FROM test_user WHERE salary < 600');
   await connection.end();
 
@@ -73,12 +77,14 @@ test('test sync between mysql and elastic search', async () => {
   const r3 = await es.get({ index: 'test_user', type: 'user', id: 6 }).catch(() => {});
   const r4 = await es.get({ index: 'test_user', type: 'user', id: 4 }).catch(() => {});
   const r5 = await es.get({ index: 'test_user', type: 'user', id: 5 }).catch(() => {});
+  const r6 = await es.get({ index: 'test_user', type: 'user', id: 7 }).catch(() => {});
 
   expect(r1).not.toBe(undefined);
   expect(r2).not.toBe(undefined);
   expect(r3).not.toBe(undefined);
   expect(r4).toBe(undefined);
   expect(r5).toBe(undefined);
+  expect(r6).toBe(undefined);
 
   expect(r1._source).toEqual({ id: 1, name: 'Jonh', gender: 'M', title: 'CEO', salary: 1300 });
   expect(r2._source).toEqual({ id: 2, name: 'Mike', gender: 'M', title: 'CTO', salary: 1100 });
