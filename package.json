@@ -8,7 +8,11 @@
     "lint": "eslint ."
   },
   "keywords": [],
-  "author": "Thor Mengkheang <thormengkheang@gmail.com> (http://mengkheang.github.io)",
+  "author": "Thor Mengkheang <thormengkheang@gmail.com> (http://thormengkheang.github.io)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thormengkheang/esmysqlsync.git"
+  },
   "license": "MIT",
   "dependencies": {
     "elasticsearch": "^14.1.0",
