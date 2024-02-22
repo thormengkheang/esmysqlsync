@@ -13,6 +13,10 @@
     "type": "git",
     "url": "git+https://github.com/thormengkheang/esmysqlsync.git"
   },
+  "bugs": {
+    "url": "https://github.com/thormengkheang/esmysqlsync/issues"
+  },
+  "homepage": "https://github.com/thormengkheang/esmysqlsync#readme",
   "license": "MIT",
   "dependencies": {
     "elasticsearch": "^14.1.0",
